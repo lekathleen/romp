@@ -12,11 +12,13 @@ class TripBase(BaseModel):
 
 class TripCreate(TripBase):
     """Schema for POST /trips request body."""
+
     pass
 
 
 class TripResponse(TripBase):
     """Schema for API responses."""
+
     id: UUID
     threshold_score: float
     created_at: datetime
