@@ -1,7 +1,7 @@
 # Romp 🦦
 
-> Replace the messy group chat with a structured tool for discovering,
-> voting on, and planning activities together with your travel crew.
+> We've all been there: 50 unread messages and still no plan.
+> Romp helps friend groups share, vote on, and plan trip activities together.
 
 ## Quick Start
 ```bash
