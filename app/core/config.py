@@ -4,8 +4,6 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     """
     All configuration is read from environment variables.
-    Pydantic-settings handles type coercion and validation automatically.
-    This means: no hardcoded config, no os.getenv() scattered around the codebase.
     """
 
     model_config = SettingsConfigDict(
@@ -21,6 +19,7 @@ class Settings(BaseSettings):
 
     # Database
     database_url: str = "postgresql+asyncpg://romp:romp@localhost:5432/romp"
+    test_database_url: str = "postgresql+asyncpg://romp:romp@localhost:5432/romp_test"
 
     # Redis
     redis_url: str = "redis://localhost:6379"
