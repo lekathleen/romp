@@ -11,6 +11,7 @@ from sqlalchemy.pool import NullPool
 from app.core.config import settings
 from app.core.database import get_db
 from app.main import app
+from app.models import Base
 
 
 @pytest.fixture(scope="session")
@@ -21,10 +22,14 @@ def anyio_backend():
 @pytest.fixture(scope="session")
 async def engine():
     engine = create_async_engine(
-        settings.database_url,
-        poolclass=NullPool,  # disables pooling, prevents stale connections in tests
+        settings.test_database_url,
+        poolclass=NullPool,
     )
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
     yield engine
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
     await engine.dispose()
 
 

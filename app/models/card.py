@@ -1,7 +1,15 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import ARRAY, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import (
+    ARRAY,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -33,6 +41,9 @@ class Card(Base):
 
 class Vote(Base):
     __tablename__ = "votes"
+    __table_args__ = (
+        UniqueConstraint("card_id", "member_id", name="uq_vote_card_member"),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4

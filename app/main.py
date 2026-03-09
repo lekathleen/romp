@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from app.api.routes import health, trips
+from app.api.routes import cards, health, trips, votes
 from app.core.config import settings
 
 # Swagger UI available at /docs, ReDoc at /redoc
@@ -12,6 +12,8 @@ app = FastAPI(
 
 app.include_router(health.router)
 app.include_router(trips.router)
+app.include_router(cards.router)
+app.include_router(votes.router)
 
 
 @app.get("/", include_in_schema=False)
