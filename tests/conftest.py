@@ -56,3 +56,33 @@ async def client(db_session):
         yield ac
 
     app.dependency_overrides.clear()
+
+
+@pytest.fixture
+async def test_trip(client):
+    response = await client.post(
+        "/trips",
+        json={"name": "Test Trip", "description": "A test trip", "destinations": ["Tokyo"]},
+    )
+    assert response.status_code == 201  # was 200
+    return response.json()
+
+
+@pytest.fixture
+async def test_card(client, test_trip):
+    response = await client.post(
+        f"/trips/{test_trip['id']}/cards",
+        json={"title": "Senso-ji Temple", "description": "Famous temple", "tags": ["Nature"], "location": "Tokyo", "price_range": "$"},
+    )
+    assert response.status_code == 200  # correct already
+    return response.json()
+
+
+@pytest.fixture
+async def joined_member(client, test_trip):
+    response = await client.post(
+        f"/trips/{test_trip['id']}/join",
+        json={"nickname": "testuser"},
+    )
+    assert response.status_code == 201  # was 200
+    return response.json()

@@ -37,7 +37,15 @@ asyncio_mode = "auto"
 anyio_mode = "asyncio"
 
 [tool.coverage.run]
-omit = ["migrations/*", "*/migrations/*", "*/__init__.py"]
+source = ["app"]
+omit = [
+    "app/models/__init__.py",
+    "migrations/*",
+]
+
+[tool.coverage.report]
+fail_under = 70
+show_missing = true
 
 [tool.ruff]
 line-length = 88

@@ -108,3 +108,22 @@ async def test_planned(client, trip, member, card):
     data = response.json()
     assert len(data) == 1
     assert data[0]["is_planned"] is True
+
+
+async def test_vote_invalid_session_token(client, test_trip, test_card):
+    # Valid UUID format but no member with this token exists
+    response = await client.post(
+        f"/trips/{test_trip['id']}/cards/{test_card['id']}/vote",
+        json={"score": 1},
+        headers={"X-Session-Token": "00000000-0000-0000-0000-000000000000"},
+    )
+    assert response.status_code == 401
+
+
+async def test_vote_card_not_found(client, test_trip, joined_member):
+    response = await client.post(
+        f"/trips/{test_trip['id']}/cards/00000000-0000-0000-0000-000000000000/vote",
+        json={"score": 1},
+        headers={"X-Session-Token": joined_member["session_token"]},
+    )
+    assert response.status_code == 404
