@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.core.redis import publish_vote_update
 from app.repositories.card import CardRepository
 from app.repositories.member import MemberRepository
 from app.repositories.trip import TripRepository
@@ -42,4 +43,11 @@ async def vote_on_card(
     if card is None or card.trip_id != trip_id:
         raise HTTPException(status_code=404, detail="Card not found")
 
-    return await VoteRepository(db).upsert(card_id, member.id, vote_data.score)
+    vote = await VoteRepository(db).upsert(card_id, member.id, vote_data.score)
+
+    await publish_vote_update(
+        str(trip_id),
+        {"event": "vote_update", "card_id": str(card_id), "trip_id": str(trip_id)},
+    )
+
+    return vote

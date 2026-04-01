@@ -4,6 +4,7 @@ back on teardown, keeping the database clean between tests.
 """
 
 import pytest
+from fastapi.testclient import TestClient
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.pool import NullPool
@@ -96,3 +97,9 @@ async def joined_member(client, test_trip):
     )
     assert response.status_code == 201  # was 200
     return response.json()
+
+
+@pytest.fixture
+def sync_client():
+    with TestClient(app) as c:
+        yield c
