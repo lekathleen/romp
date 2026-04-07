@@ -25,8 +25,10 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379"
 
     # AWS
+    aws_access_key_id: str = ""
+    aws_secret_access_key: str = ""
     aws_region: str = "us-west-2"
-    s3_bucket_name: str = "romp-images"
+    s3_bucket_name: str = ""
 
 
 settings = Settings()
