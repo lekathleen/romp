@@ -103,3 +103,17 @@ async def joined_member(client, test_trip):
 def sync_client():
     with TestClient(app) as c:
         yield c
+
+
+@pytest.fixture
+async def test_image(client, test_trip, test_card):
+    response = await client.post(
+        f"/trips/{test_trip['id']}/cards/{test_card['id']}/images",
+        params={
+            "s3_key": f"cards/{test_card['id']}/test-image.jpg",
+            "is_thumbnail": True,
+            "display_order": 0,
+        },
+    )
+    assert response.status_code == 200
+    return response.json()

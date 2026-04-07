@@ -37,6 +37,9 @@ class Card(Base):
     votes: Mapped[list["Vote"]] = relationship(
         back_populates="card", cascade="all, delete-orphan"
     )
+    images: Mapped[list["CardImage"]] = relationship(
+        "CardImage", back_populates="card", order_by="CardImage.display_order"
+    )
 
 
 class Vote(Base):
@@ -58,3 +61,22 @@ class Vote(Base):
     )
 
     card: Mapped["Card"] = relationship(back_populates="votes")
+
+
+class CardImage(Base):
+    __tablename__ = "card_images"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    card_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("cards.id", ondelete="CASCADE"), nullable=False
+    )
+    s3_key: Mapped[str] = mapped_column(String(500), nullable=False)
+    is_thumbnail: Mapped[bool] = mapped_column(default=False)
+    display_order: Mapped[int] = mapped_column(default=0)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
+
+    card: Mapped["Card"] = relationship("Card", back_populates="images")

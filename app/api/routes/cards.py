@@ -5,8 +5,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.repositories.card import CardRepository
+from app.repositories.image import ImageRepository
 from app.repositories.trip import TripRepository
-from app.schemas.card import CardCreate, CardResponse
+from app.schemas.card import CardCreate, CardImageResponse, CardResponse
+from app.services.images import generate_presigned_upload_url
 from app.services.scoring import apply_threshold
 
 router = APIRouter()
@@ -78,3 +80,48 @@ async def get_planned(trip_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
             response.is_planned = True
             cards.append(response)
     return cards
+
+
+@router.post("/trips/{trip_id}/cards/{card_id}/upload-url")
+async def get_upload_url(
+    trip_id: uuid.UUID,
+    card_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+):
+    trip = await TripRepository(db).get_by_id(trip_id)
+    if trip is None:
+        raise HTTPException(status_code=404, detail="Trip not found")
+
+    card = await CardRepository(db).get_by_id(card_id)
+    if card is None:
+        raise HTTPException(status_code=404, detail="Card not found")
+
+    object_key = f"cards/{card_id}/{uuid.uuid4()}"
+    url = generate_presigned_upload_url(object_key)
+    return {"upload_url": url, "object_key": object_key}
+
+
+@router.post(
+    "/trips/{trip_id}/cards/{card_id}/images",
+    response_model=CardImageResponse,
+)
+async def associate_image(
+    trip_id: uuid.UUID,
+    card_id: uuid.UUID,
+    s3_key: str,
+    is_thumbnail: bool = False,
+    display_order: int = 0,
+    db: AsyncSession = Depends(get_db),
+):
+    trip = await TripRepository(db).get_by_id(trip_id)
+    if trip is None:
+        raise HTTPException(status_code=404, detail="Trip not found")
+
+    card = await CardRepository(db).get_by_id(card_id)
+    if card is None:
+        raise HTTPException(status_code=404, detail="Card not found")
+
+    image = await ImageRepository(db).create(
+        card_id, s3_key, is_thumbnail, display_order
+    )
+    return image

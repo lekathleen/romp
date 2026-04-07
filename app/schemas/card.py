@@ -16,6 +16,15 @@ class CardCreate(CardBase):
     pass
 
 
+class CardImageResponse(BaseModel):
+    id: uuid.UUID
+    s3_key: str
+    is_thumbnail: bool
+    display_order: int
+
+    model_config = {"from_attributes": True}
+
+
 class CardResponse(CardBase):
     id: uuid.UUID
     trip_id: uuid.UUID
@@ -23,5 +32,6 @@ class CardResponse(CardBase):
     created_at: datetime
     average_score: float | None = None
     is_planned: bool = False
+    images: list[CardImageResponse] = []
 
     model_config = {"from_attributes": True}

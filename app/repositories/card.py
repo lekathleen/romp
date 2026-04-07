@@ -2,6 +2,7 @@ import uuid
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.models.card import Card, Vote
 from app.schemas.card import CardCreate
@@ -21,8 +22,11 @@ class CardRepository:
         )
         self.db.add(card)
         await self.db.commit()
-        await self.db.refresh(card)
-        return card
+
+        result = await self.db.execute(
+            select(Card).options(selectinload(Card.images)).where(Card.id == card.id)
+        )
+        return result.scalar_one()
 
     async def get_all_with_scores(self, trip_id: int) -> list[dict]:
         result = await self.db.execute(
@@ -35,9 +39,12 @@ class CardRepository:
             .where(Card.trip_id == trip_id)
             .group_by(Card.id)
             .order_by(func.avg(Vote.score).asc().nulls_last())
+            .options(selectinload(Card.images))
         )
         return result.all()
 
     async def get_by_id(self, card_id: uuid.UUID) -> Card | None:
-        result = await self.db.execute(select(Card).where(Card.id == card_id))
+        result = await self.db.execute(
+            select(Card).options(selectinload(Card.images)).where(Card.id == card_id)
+        )
         return result.scalar_one_or_none()
